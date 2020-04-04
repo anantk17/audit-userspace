@@ -65,6 +65,7 @@ static int ignore = 0, continue_error = 0;
 static int exclude = 0;
 static int multiple = 0;
 static struct audit_rule_data *rule_new = NULL;
+static struct audit_template_udata *template_rule_new = NULL;
 
 /*
  * This function will reset everything used for each loop when loading 
@@ -133,6 +134,8 @@ static void usage(void)
      "    -v                  Version\n"
      "    -w <path>           Insert watch at <path>\n"
      "    -W <path>           Remove watch at <path>\n"
+	 "	  -T [0..1]			  Enable audit template feature"
+	 "	  -z file=f    		  Read template from file and filter based on it"
 #if defined(HAVE_DECL_AUDIT_FEATURE_VERSION) && \
     defined(HAVE_STRUCT_AUDIT_STATUS_FEATURE_BITMAP)
      "    --loginuid-immutable  Make loginuids unchangeable once set\n"
@@ -545,7 +548,7 @@ static int setopt(int count, int lineno, char *vars[])
     keylen = AUDIT_MAX_KEY_LEN;
 
     while ((retval >= 0) && (c = getopt_long(count, vars,
-			"hicslDvtC:e:f:r:b:a:A:d:S:F:m:R:w:W:k:p:q:",
+			"hicslDvtC:e:T:z:f:r:b:a:A:d:S:F:m:R:w:W:k:p:q:",
 			long_opts, &lidx)) != EOF) {
 	int flags = AUDIT_FILTER_UNSET;
 	rc = 10;	// Init to something impossible to see if unused.
@@ -592,6 +595,20 @@ static int setopt(int count, int lineno, char *vars[])
 				retval = -1;
 		} else {
 			audit_msg(LOG_ERR, "Enable must be 0, 1, or 2 was %s", 
+				optarg);
+			retval = -1;
+		}
+		break;
+		case 'T':
+		if (optarg && ((strcmp(optarg, "0") == 0) ||
+				(strcmp(optarg, "1") == 0))) {
+			printf("Template enabled %s\n",optarg);
+			if (audit_set_template_enabled(fd, strtoul(optarg,NULL,0)) > 0)
+				audit_request_status(fd);
+			else
+				retval = -1;
+		} else {
+			audit_msg(LOG_ERR, "Enable must be 0 or 1 was %s", 
 				optarg);
 			retval = -1;
 		}
@@ -1025,6 +1042,16 @@ process_keys:
 		break;
 	case 'v':
 		printf("auditctl version %s\n", VERSION);
+		retval = -2;
+		break;
+	case 'z':
+		//In here we need to read data from a file
+		if(strncmp(optarg, "file=", 5) == 0){
+			char* file_name = strchr(optarg,'=')+1;
+			printf("Here's the template file %s, %s",optarg,strchr(optarg,'=')+1);
+
+			process_audit_template_file(fd,file_name);
+		}
 		retval = -2;
 		break;
 	// Now the long options

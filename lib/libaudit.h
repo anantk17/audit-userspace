@@ -604,6 +604,7 @@ int audit_set_backlog_wait_time(int fd, uint32_t bwt);
 int audit_reset_lost(int fd);
 extern int  audit_set_feature(int fd, unsigned feature, unsigned value, unsigned lock);
 extern int  audit_set_loginuid_immutable(int fd);
+extern int audit_set_template_enabled(int fd, uint32_t enabled);
 
 /* AUDIT_LIST_RULES */
 extern int  audit_request_rules_list_data(int fd);
@@ -666,6 +667,10 @@ extern int  audit_rule_fieldpair_data(struct audit_rule_data **rulep,
 extern int audit_rule_interfield_comp_data(struct audit_rule_data **rulep,
 					 const char *pair, int flags);
 extern void audit_rule_free_data(struct audit_rule_data *rule);
+
+extern struct audit_template_udata* get_audit_template_udata_from_file(char *filename);
+
+extern void process_audit_template_file(int fd,char* file_name);
 
 /* Capability testing functions */
 int audit_can_control(void);

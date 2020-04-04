@@ -354,6 +354,21 @@ int audit_set_enabled(int fd, uint32_t enabled)
 	return rc;
 }
 
+int audit_set_template_enabled(int fd, uint32_t enabled)
+{
+	int rc;
+	struct audit_status s;
+
+	memset(&s, 0, sizeof(s));
+	s.mask = AUDIT_TEMPLATE_ENABLED;
+	s.template_enabled = enabled;
+	rc = audit_send(fd,AUDIT_SET,&s,sizeof(s));
+	if (rc < 0)
+		audit_msg(audit_priority(errno),
+			"Error sending enable request (%s)", strerror(-rc));
+	return rc;
+}
+
 /* 
  * This function will return 0 if auditing is NOT enabled and
  * 1 if enabled, and -1 on error.
@@ -770,6 +785,23 @@ int audit_add_rule_data(int fd, struct audit_rule_data *rule,
 			"Error sending add rule data request (%s)",
 				errno == EEXIST ? 
 				"Rule exists" : strerror(-rc));
+	return rc;
+}
+
+extern void process_audit_template_file(int fd,char* file_name){
+	struct audit_template_udata *udata = malloc(sizeof(struct audit_template_udata));
+	int rc;
+
+	udata->execlen = 0;
+	udata->namelen = 0;
+	udata->seqlen = 0;
+	udata->buflen = 0;
+	udata = realloc(udata,sizeof(struct audit_template_udata) + 20);
+
+	rc = audit_send(fd,AUDIT_ADD_TEMPLATE,udata,sizeof(struct audit_template_udata) + 20);
+	
+	free(udata);
+
 	return rc;
 }
 

@@ -259,6 +259,8 @@ int audit_send(int fd, int type, const void *data, unsigned int size)
 	int rc;
 	int seq;
 
+	//printf("Sent message size : %d",size);
+
 	rc = __audit_send(fd, type, data, size, &seq);
 	if (rc == 0)
 		rc = seq;

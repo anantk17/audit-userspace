@@ -28,7 +28,7 @@
 
 /* The message mode refers to where informational messages go
    0 - stderr, 1 - syslog, 2 - quiet. The default is quiet. */
-static message_t message_mode = MSG_QUIET;
+static message_t message_mode = MSG_SYSLOG;
 static debug_message_t debug_message = DBG_NO;
 
 void set_aumessage_mode(message_t mode, debug_message_t debug)
