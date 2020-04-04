@@ -100,6 +100,12 @@ static const struct kw_pair keywords[] =
   { NULL,		NULL }
 };
 
+
+struct audit_template_seq_data{
+	unsigned int syscall;
+	unsigned long argv[4];
+};
+
 static int audit_priority(int xerrno)
 {
 	/* If they've compiled their own kernel and did not include
@@ -792,13 +798,24 @@ extern void process_audit_template_file(int fd,char* file_name){
 	struct audit_template_udata *udata = malloc(sizeof(struct audit_template_udata));
 	int rc;
 
-	udata->execlen = 0;
-	udata->namelen = 0;
-	udata->seqlen = 0;
-	udata->buflen = 0;
-	udata = realloc(udata,sizeof(struct audit_template_udata) + 20);
+	const char* exec_name = "/home/pi/test";
+	const char* template_name = "Template 1";
+	struct audit_template_seq_data seq_data = {3, {3, -1, -1, -1}};
 
-	rc = audit_send(fd,AUDIT_ADD_TEMPLATE,udata,sizeof(struct audit_template_udata) + 20);
+	udata->execlen = strlen(exec_name);
+	udata->namelen = strlen(template_name);
+	udata->seqlen = 1;
+	udata->buflen = udata->execlen + udata->namelen + sizeof(struct audit_template_seq_data);
+
+	udata = realloc(udata,sizeof(struct audit_template_udata) + udata->buflen);
+
+	memcpy(&udata->buf[0],exec_name,udata->execlen);
+	memcpy(&udata->buf[0] + udata->execlen,template_name,udata->namelen);
+	memcpy(&udata->buf[0] + udata->execlen + udata->namelen,&seq_data,sizeof(seq_data));
+
+
+	printf("Size of message to send %d %d %d",sizeof(struct audit_template_seq_data),sizeof(struct audit_template_udata),sizeof(struct audit_template_udata) + udata->buflen);
+	rc = audit_send(fd,AUDIT_ADD_TEMPLATE,udata,sizeof(struct audit_template_udata) + udata->buflen);
 	
 	free(udata);
 
