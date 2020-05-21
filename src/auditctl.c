@@ -548,7 +548,7 @@ static int setopt(int count, int lineno, char *vars[])
     keylen = AUDIT_MAX_KEY_LEN;
 
     while ((retval >= 0) && (c = getopt_long(count, vars,
-			"hicslDvtC:e:T:z:f:r:b:a:A:d:S:F:m:R:w:W:k:p:q:",
+			"hicslDvtC:e:T:z:u:f:r:b:a:A:d:S:F:m:R:w:W:k:p:q:",
 			long_opts, &lidx)) != EOF) {
 	int flags = AUDIT_FILTER_UNSET;
 	rc = 10;	// Init to something impossible to see if unused.
@@ -1053,6 +1053,9 @@ process_keys:
 			process_audit_template_file(fd,file_name);
 		}
 		retval = -2;
+		break;
+	case 'u':
+		//Add support for clearing templates here
 		break;
 	// Now the long options
 	case 1:

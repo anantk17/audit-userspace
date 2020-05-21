@@ -360,6 +360,19 @@ int audit_set_enabled(int fd, uint32_t enabled)
 	return rc;
 }
 
+int audit_clear_template(int fd){
+	int rc;
+	struct audit_status s;
+	
+	memset(&s,0,sizeof(s));
+	s.mask = AUDIT_DEL_TEMPLATES;
+	rc = audit_send(fd, AUDIT_SET, &s, sizeof(s));
+	if (rc < 0)
+		audit_msg(audit_priority(errno),
+			"Error sending enable request (%s)", strerror(-rc));
+	return rc;
+}
+
 int audit_set_template_enabled(int fd, uint32_t enabled)
 {
 	int rc;
@@ -795,26 +808,71 @@ int audit_add_rule_data(int fd, struct audit_rule_data *rule,
 }
 
 extern void process_audit_template_file(int fd,char* file_name){
-	struct audit_template_udata *udata = malloc(sizeof(struct audit_template_udata));
 	int rc;
 
-	const char* exec_name = "/home/pi/test";
-	const char* template_name = "Template 1";
-	struct audit_template_seq_data seq_data = {3, {3, -1, -1, -1}};
+	FILE *fptr;
+	char template_name[25];
+	//char exec_name[256];
+	if((fptr = fopen(file_name,"r")) == NULL){
+		printf("Error opening file");
+		return -1;
+	}
 
+	//Read template name
+	fgets(template_name,24,fptr);
+	template_name[strcspn(template_name,"\n")] = 0;
+
+	printf("template name read %s\n",template_name);
+	
+	//Read template length
+	int template_len;
+	fscanf(fptr,"%d",&template_len);
+
+	printf("template length read %d\n",template_len);
+
+	//The rest of the lines will contain 5 integers separated by commas
+	int syscall,arg0,arg1,arg2,arg3,i=0;
+	struct audit_template_seq_data *tpl_data = malloc(template_len * sizeof(struct audit_template_seq_data));
+	char str[256];
+	while(fscanf(fptr,"%d,%d,%d,%d,%d",&syscall,&arg0,&arg1,&arg2,&arg3) != EOF){
+		tpl_data[i].syscall = syscall;
+		tpl_data[i].argv[0] = arg0;
+		tpl_data[i].argv[1] = arg1;
+		tpl_data[i].argv[2] = arg2;
+		tpl_data[i].argv[3] = arg3;
+
+		printf("template entry read %d %d %d %d \n",syscall,arg0,arg1,arg2,arg3);
+		
+		i++;
+		if(i == 14){
+			break;
+		}
+	}
+
+	if(i != template_len){
+		printf("Incorrect template length provided %d, read %d entries\n",template_len,i);
+		free(tpl_data);
+		close(fptr);
+		return -1;
+	}
+
+	struct audit_template_udata *udata = malloc(sizeof(struct audit_template_udata));
+	const char* exec_name = "/home/pi/test";
+
+	__u32 seq_data_size = i * sizeof(struct audit_template_seq_data);
 	udata->execlen = strlen(exec_name);
 	udata->namelen = strlen(template_name);
-	udata->seqlen = 1;
-	udata->buflen = udata->execlen + udata->namelen + sizeof(struct audit_template_seq_data);
+	udata->seqlen = template_len;
+	udata->buflen = udata->execlen + udata->namelen + seq_data_size;
 
 	udata = realloc(udata,sizeof(struct audit_template_udata) + udata->buflen);
 
 	memcpy(&udata->buf[0],exec_name,udata->execlen);
 	memcpy(&udata->buf[0] + udata->execlen,template_name,udata->namelen);
-	memcpy(&udata->buf[0] + udata->execlen + udata->namelen,&seq_data,sizeof(seq_data));
+	memcpy(&udata->buf[0] + udata->execlen + udata->namelen,tpl_data,seq_data_size);
 
 
-	printf("Size of message to send %d %d %d",sizeof(struct audit_template_seq_data),sizeof(struct audit_template_udata),sizeof(struct audit_template_udata) + udata->buflen);
+	printf("Size of message to send %d %d %d %d",sizeof(struct audit_template_seq_data),sizeof(struct audit_template_udata),sizeof(struct audit_template_udata) + udata->buflen,seq_data_size);
 	rc = audit_send(fd,AUDIT_ADD_TEMPLATE,udata,sizeof(struct audit_template_udata) + udata->buflen);
 	
 	free(udata);
