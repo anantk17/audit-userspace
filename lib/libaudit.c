@@ -104,6 +104,7 @@ static const struct kw_pair keywords[] =
 struct audit_template_seq_data{
 	unsigned int syscall;
 	unsigned long argv[4];
+	unsigned long delta;
 };
 
 static int audit_priority(int xerrno)
@@ -830,23 +831,30 @@ extern void process_audit_template_file(int fd,char* file_name){
 
 	printf("template length read %d\n",template_len);
 
+	unsigned long total_time = 0;
+	fscanf(fptr, "%lu", &total_time);
+
+	printf("total time for template %lu\n", total_time);
+
 	//The rest of the lines will contain 5 integers separated by commas
 	int syscall,arg0,arg1,arg2,arg3,i=0;
+	unsigned long delta = 0;
 	struct audit_template_seq_data *tpl_data = malloc(template_len * sizeof(struct audit_template_seq_data));
 	char str[256];
-	while(fscanf(fptr,"%d,%d,%d,%d,%d",&syscall,&arg0,&arg1,&arg2,&arg3) != EOF){
+	while(fscanf(fptr,"%d:%d:%d:%d:%d:%lu",&syscall,&arg0,&arg1,&arg2,&arg3,&delta) != EOF){
 		tpl_data[i].syscall = syscall;
 		tpl_data[i].argv[0] = arg0;
 		tpl_data[i].argv[1] = arg1;
 		tpl_data[i].argv[2] = arg2;
 		tpl_data[i].argv[3] = arg3;
+		tpl_data[i].delta = delta;
 
-		printf("template entry read %d %d %d %d \n",syscall,arg0,arg1,arg2,arg3);
+		printf("template entry read %d %d %d %d %d %d\n",syscall, arg0, arg1, arg2, arg3, delta);
 		
 		i++;
-		if(i == 14){
+/* 		if(i == template_len){
 			break;
-		}
+		} */
 	}
 
 	if(i != template_len){
@@ -863,6 +871,7 @@ extern void process_audit_template_file(int fd,char* file_name){
 	udata->execlen = strlen(exec_name);
 	udata->namelen = strlen(template_name);
 	udata->seqlen = template_len;
+	udata->tpl_time = total_time;
 	udata->buflen = udata->execlen + udata->namelen + seq_data_size;
 
 	udata = realloc(udata,sizeof(struct audit_template_udata) + udata->buflen);
