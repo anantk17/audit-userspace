@@ -555,10 +555,10 @@ int audit_print_reply(struct audit_reply *rep, int fd)
 				printf("enabled %u\nfailure %u\n",
 				rep->status->enabled, rep->status->failure);
 			printf("pid %u\nrate_limit %u\nbacklog_limit %u\n"
-				"lost %u\nbacklog %u\ntemplate_enabled %u\n",
+				"lost %u\nbacklog %u\ntemplate_enabled %u\nmacro_template_enabled %u",
 			rep->status->pid, rep->status->rate_limit,
 			rep->status->backlog_limit, rep->status->lost,
-			rep->status->backlog,rep->status->template_enabled);
+			rep->status->backlog,rep->status->template_enabled,rep->status->macro_template_enabled);
 #if HAVE_DECL_AUDIT_VERSION_BACKLOG_WAIT_TIME == 1 || \
     HAVE_DECL_AUDIT_STATUS_BACKLOG_WAIT_TIME == 1
 

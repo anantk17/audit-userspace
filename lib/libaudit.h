@@ -605,6 +605,7 @@ int audit_reset_lost(int fd);
 extern int  audit_set_feature(int fd, unsigned feature, unsigned value, unsigned lock);
 extern int  audit_set_loginuid_immutable(int fd);
 extern int audit_set_template_enabled(int fd, uint32_t enabled);
+extern int audit_set_macro_template_enabled(int fd, uint32_t enabled);
 
 /* AUDIT_LIST_RULES */
 extern int  audit_request_rules_list_data(int fd);
