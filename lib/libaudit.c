@@ -848,8 +848,11 @@ extern void process_audit_template_file(int fd,char* file_name){
 
 	unsigned long total_time = 0;
 	fscanf(fptr, "%lu", &total_time);
-
 	printf("total time for template %lu\n", total_time);
+	
+	unsigned long macro_template_time = 0;
+	fscanf(fptr, "%lu", &macro_template_time);
+	printf("template arrival time %lu\n", macro_template_time);
 
 	//The rest of the lines will contain 5 integers separated by commas
 	int syscall,arg0,arg1,arg2,arg3,i=0;
@@ -887,6 +890,7 @@ extern void process_audit_template_file(int fd,char* file_name){
 	udata->namelen = strlen(template_name);
 	udata->seqlen = template_len;
 	udata->tpl_time = total_time;
+	udata->tpl_macro_delta = macro_template_time;
 	udata->buflen = udata->execlen + udata->namelen + seq_data_size;
 
 	udata = realloc(udata,sizeof(struct audit_template_udata) + udata->buflen);

@@ -555,7 +555,7 @@ int audit_print_reply(struct audit_reply *rep, int fd)
 				printf("enabled %u\nfailure %u\n",
 				rep->status->enabled, rep->status->failure);
 			printf("pid %u\nrate_limit %u\nbacklog_limit %u\n"
-				"lost %u\nbacklog %u\ntemplate_enabled %u\nmacro_template_enabled %u",
+				"lost %u\nbacklog %u\ntemplate_enabled %u\nmacro_template_enabled %u\n",
 			rep->status->pid, rep->status->rate_limit,
 			rep->status->backlog_limit, rep->status->lost,
 			rep->status->backlog,rep->status->template_enabled,rep->status->macro_template_enabled);
