@@ -363,11 +363,8 @@ int audit_set_enabled(int fd, uint32_t enabled)
 
 int audit_clear_template(int fd){
 	int rc;
-	struct audit_status s;
 	
-	memset(&s,0,sizeof(s));
-	s.mask = AUDIT_DEL_TEMPLATES;
-	rc = audit_send(fd, AUDIT_SET, &s, sizeof(s));
+	rc = audit_send(fd, AUDIT_DEL_TEMPLATE, NULL, 0);
 	if (rc < 0)
 		audit_msg(audit_priority(errno),
 			"Error sending enable request (%s)", strerror(-rc));
