@@ -137,7 +137,7 @@ static void usage(void)
 	 "	  -T [0..1]			  Enable audit template feature\n"
 	 "	  -M [0..1]			  Enable macro template feature\n"
 	 "	  -z file=f    		  Read template from file and filter based on it\n"
-	 "	  -X				  Clear templates from kernel memory"
+	 "	  -X				  Clear templates from kernel memory\n"
 #if defined(HAVE_DECL_AUDIT_FEATURE_VERSION) && \
     defined(HAVE_STRUCT_AUDIT_STATUS_FEATURE_BITMAP)
      "    --loginuid-immutable  Make loginuids unchangeable once set\n"
@@ -550,7 +550,7 @@ static int setopt(int count, int lineno, char *vars[])
     keylen = AUDIT_MAX_KEY_LEN;
 
     while ((retval >= 0) && (c = getopt_long(count, vars,
-			"hicslDvtC:e:T:M:X:z:u:f:r:b:a:A:d:S:F:m:R:w:W:k:p:q:",
+			"hicslDvtXC:e:T:M:z:u:f:r:b:a:A:d:S:F:m:R:w:W:k:p:q:",
 			long_opts, &lidx)) != EOF) {
 	int flags = AUDIT_FILTER_UNSET;
 	rc = 10;	// Init to something impossible to see if unused.
