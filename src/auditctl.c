@@ -554,6 +554,7 @@ static int setopt(int count, int lineno, char *vars[])
 			long_opts, &lidx)) != EOF) {
 	int flags = AUDIT_FILTER_UNSET;
 	rc = 10;	// Init to something impossible to see if unused.
+	printf("CMD option %c\n",c);
         switch (c) {
         case 'h':
 		usage();
@@ -616,6 +617,7 @@ static int setopt(int count, int lineno, char *vars[])
 		}
 		break;
 		case 'X':
+			printf("Trying to clear templates \n");
 			if(audit_clear_template(fd) < 0)
 				retval = -1;
 		break;
