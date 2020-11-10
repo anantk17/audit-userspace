@@ -627,10 +627,13 @@ static void write_to_log(const struct auditd_event *e)
 	int rc;
 	int ack_type = AUDIT_RMW_TYPE_ACK;
 	const char *msg = "";
+	struct timespec commit_ts;
+	clock_gettime (CLOCK_REALTIME, &commit_ts);
 
 	/* write it to disk */
-	rc = fprintf(log_file, "%s\n", e->reply.message);
-
+	rc = fprintf(log_file, "%s, commit_time=%llu.%09lu\n", e->reply.message, 
+				 commit_ts.tv_sec, commit_ts.tv_nsec);
+	
 	/* error? Handle it */
 	if (rc < 0) {
 		if (errno == ENOSPC) {
