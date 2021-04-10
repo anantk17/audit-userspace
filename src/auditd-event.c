@@ -632,7 +632,7 @@ static void write_to_log(const struct auditd_event *e)
 
 	/* write it to disk */
 	rc = fprintf(log_file, "%s, commit_time=%llu.%09lu\n", e->reply.message, 
-				 commit_ts.tv_sec, commit_ts.tv_nsec);
+				(unsigned long long) commit_ts.tv_sec, commit_ts.tv_nsec);
 	
 	/* error? Handle it */
 	if (rc < 0) {
